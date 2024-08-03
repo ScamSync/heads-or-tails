@@ -163,7 +163,7 @@ client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
     if (!COINS[message.author.id]) {
-        COINS[message.author.id] = 1;
+        COINS[message.author.id] = 0;
     }
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
@@ -315,6 +315,9 @@ client.on('interactionCreate', async interaction => {
 
         await interaction.reply(`Bet placed: ${choice} with ${bet} coins.`);
     } else if (commandName === 'htcoins') {
+        if (!COINS[interaction.user.id]) {
+            COINS[interaction.user.id] = 0;
+        }
         await interaction.reply(`You have ${COINS[interaction.user.id]} coins.`);
     } else if (commandName === 'hthelp') {
         const helpEmbed = new EmbedBuilder()
