@@ -21,7 +21,7 @@ const clientId = process.env.CLIENT_ID;
 const githubToken = process.env.GITHUB_TOKEN;
 const repoOwner = process.env.REPO_OWNER;
 const repoName = process.env.REPO_NAME;
-const logFilePath = 'eliminator.json'; // Path to the log file in the repository
+const logFilePath = 'heads-or-tails.json'; // Path to the log file in the repository
 
 const PREFIX = "ss."; // Prefix remains ss.
 const COINS = {};
@@ -233,8 +233,8 @@ client.on('messageCreate', async message => {
         message.reply(`Bet placed: ${choice} with ${bet} coins.`);
     } else if (command === 'htcoins') {
         console.log('Command ss.htcoins triggered');
-        if (!COINS[message.author.id]) {
-            COINS[message.author.id] = 1;
+        if (COINS[message.author.id] === 0) {
+            COINS[message.author.id] = 1; // Ensure the user never has zero coins
         }
         message.reply(`You have ${COINS[message.author.id]} coins.`);
     } else if (command === 'hthelp') {
@@ -243,10 +243,17 @@ client.on('messageCreate', async message => {
             .setTitle('Heads or Tails Bot Commands')
             .setDescription('List of commands for the Heads or Tails bot')
             .addFields(
+                { name: 'Prefix Commands', value: '\u200B' },
                 { name: 'ss.headsortails [multiplier]', value: 'Start a new heads or tails game with an optional multiplier.' },
                 { name: 'ss.htbet <heads/tails> <amount>', value: 'Place a bet on heads or tails.' },
                 { name: 'ss.htcoins', value: 'Check your coin balance.' },
                 { name: 'ss.hthelp', value: 'Display this help message.' },
+                { name: '\u200B', value: '\u200B' },
+                { name: 'Slash Commands', value: '\u200B' },
+                { name: '/headsortails [multiplier]', value: 'Start a new heads or tails game with an optional multiplier.' },
+                { name: '/htbet [choice] [amount]', value: 'Place a bet on heads or tails.' },
+                { name: '/htcoins', value: 'Check your coin balance.' },
+                { name: '/hthelp', value: 'Display this help message.' },
             );
         message.channel.send({ embeds: [helpEmbed] });
     }
@@ -318,8 +325,8 @@ client.on('interactionCreate', async interaction => {
 
         await interaction.reply(`Bet placed: ${choice} with ${bet} coins.`);
     } else if (commandName === 'htcoins') {
-        if (!COINS[interaction.user.id]) {
-            COINS[interaction.user.id] = 1;
+        if (COINS[interaction.user.id] === 0) {
+            COINS[interaction.user.id] = 1; // Ensure the user never has zero coins
         }
         await interaction.reply(`You have ${COINS[interaction.user.id]} coins.`);
     } else if (commandName === 'hthelp') {
@@ -327,10 +334,17 @@ client.on('interactionCreate', async interaction => {
             .setTitle('Heads or Tails Bot Commands')
             .setDescription('List of commands for the Heads or Tails bot')
             .addFields(
+                { name: 'Prefix Commands', value: '\u200B' },
                 { name: 'ss.headsortails [multiplier]', value: 'Start a new heads or tails game with an optional multiplier.' },
                 { name: 'ss.htbet <heads/tails> <amount>', value: 'Place a bet on heads or tails.' },
                 { name: 'ss.htcoins', value: 'Check your coin balance.' },
                 { name: 'ss.hthelp', value: 'Display this help message.' },
+                { name: '\u200B', value: '\u200B' },
+                { name: 'Slash Commands', value: '\u200B' },
+                { name: '/headsortails [multiplier]', value: 'Start a new heads or tails game with an optional multiplier.' },
+                { name: '/htbet [choice] [amount]', value: 'Place a bet on heads or tails.' },
+                { name: '/htcoins', value: 'Check your coin balance.' },
+                { name: '/hthelp', value: 'Display this help message.' },
             );
         await interaction.reply({ embeds: [helpEmbed] });
     }
@@ -349,10 +363,11 @@ async function finalizeGame(messageOrInteraction) {
             winners.push(`<@${userId}> won ${bet.amount * activeGame.multiplier} coins!`);
         } else {
             COINS[userId] -= bet.amount;
-            if (COINS[userId] < 1) {
-                COINS[userId] = 1;
-            }
         }
+    }
+
+    if (messageOrInteraction.user && COINS[messageOrInteraction.user.id] === 0) {
+        COINS[messageOrInteraction.user.id] = 1; // Ensure the user never has zero coins
     }
 
     const resultEmbed = new EmbedBuilder()
