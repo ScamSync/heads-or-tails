@@ -163,7 +163,7 @@ client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
     if (!COINS[message.author.id]) {
-        COINS[message.author.id] = 0;
+        COINS[message.author.id] = 1;
     }
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
@@ -233,6 +233,9 @@ client.on('messageCreate', async message => {
         message.reply(`Bet placed: ${choice} with ${bet} coins.`);
     } else if (command === 'htcoins') {
         console.log('Command ss.htcoins triggered');
+        if (!COINS[message.author.id]) {
+            COINS[message.author.id] = 1;
+        }
         message.reply(`You have ${COINS[message.author.id]} coins.`);
     } else if (command === 'hthelp') {
         console.log('Command ss.hthelp triggered');
@@ -316,7 +319,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply(`Bet placed: ${choice} with ${bet} coins.`);
     } else if (commandName === 'htcoins') {
         if (!COINS[interaction.user.id]) {
-            COINS[interaction.user.id] = 0;
+            COINS[interaction.user.id] = 1;
         }
         await interaction.reply(`You have ${COINS[interaction.user.id]} coins.`);
     } else if (commandName === 'hthelp') {
@@ -346,6 +349,9 @@ async function finalizeGame(messageOrInteraction) {
             winners.push(`<@${userId}> won ${bet.amount * activeGame.multiplier} coins!`);
         } else {
             COINS[userId] -= bet.amount;
+            if (COINS[userId] < 1) {
+                COINS[userId] = 1;
+            }
         }
     }
 
